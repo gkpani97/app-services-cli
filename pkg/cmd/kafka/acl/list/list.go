@@ -93,13 +93,11 @@ func runList(opts *options) (err error) {
 		return err
 	}
 
-	req := api.AclsApi.GetAcls(opts.Context)
+	permissionsData, httpRes, err := api.AclsApi.GetAcls(opts.Context).
+		Page(float32(opts.page)).
+		Size(float32(opts.size)).
+		Execute()
 
-	req.Page(float32(opts.page))
-
-	req.Size(float32(opts.size))
-
-	permissionsData, httpRes, err := req.Execute()
 	if httpRes != nil {
 		defer httpRes.Body.Close()
 	}
