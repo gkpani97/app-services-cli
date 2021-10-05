@@ -9,6 +9,7 @@ import (
 	"github.com/redhat-developer/app-services-cli/pkg/cmd/factory"
 	"github.com/redhat-developer/app-services-cli/pkg/connection"
 	"github.com/redhat-developer/app-services-cli/pkg/iostreams"
+	"github.com/redhat-developer/app-services-cli/pkg/kafka/acl"
 	"github.com/redhat-developer/app-services-cli/pkg/localize"
 	"github.com/redhat-developer/app-services-cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -94,7 +95,7 @@ func runConsumer(opts *options) (err error) {
 		return err
 	}
 
-	var topicNameArg string = "*"
+	var topicNameArg string = acl.Wildcard
 	var patternArg kafkainstanceclient.AclPatternType = kafkainstanceclient.ACLPATTERNTYPE_LITERAL
 
 	if opts.topic != "" {
@@ -174,7 +175,7 @@ func runConsumer(opts *options) (err error) {
 		}
 	}
 
-	aclBindGroupRead := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_GROUP, "*", patternArg, userArg, kafkainstanceclient.ACLOPERATION_READ, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
+	aclBindGroupRead := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_GROUP, acl.Wildcard, patternArg, userArg, kafkainstanceclient.ACLOPERATION_READ, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
 
 	req = api.AclsApi.CreateAcl(opts.Context)
 
