@@ -18,7 +18,7 @@ $ rhoas kafka acl list
 one = 'you are unauthorized to {{.Operation}} these Kafka ACL rules'
 
 [kafka.acl.common.error.forbidden]
-one = 'you are forbidden to {{.Operation}} this consumer group'
+one = 'you are forbidden to {{.Operation}} this Kafka ACL rule'
 
 [kafka.acl.common.error.internalServerError]
 one = 'internal server error'
@@ -29,6 +29,24 @@ one = 'unable to connect to Kafka instance "{{.Name}}"'
 [kafka.acl.common.error.noKafkaSelected]
 one = 'no Kafka instance is currently selected, run "rhoas kafka use" to set the current instance'
 
+[kafka.acl.common.error.bothPricipalsSelected]
+one = 'flags "user" and "service-account" can not be provided simultaneously'
+
+[kafka.acl.common.error.noPricipalsSelected]
+one = 'principal is missing, provide "user" or "service-account" flag'
+
+
+[kafka.acl.common.flag.user.description]
+one = 'username to be used as principal'
+
+[kafka.acl.common.flag.serviceAccount.description]
+one = 'service account ID to be used as principal'
+
+[kafka.acl.common.flag.topicPrefix.description]
+one = 'prefix topic name to define ACL rules for'
+
+[kafka.acl.common.flag.transactionalID.description]
+one = 'transactional ID for which ACL rules are to be defined'
 
 
 [kafka.acl.list.cmd.shortDescription]
@@ -65,3 +83,40 @@ one = 'is'
 
 [kafka.acl.list.startsWith]
 one = 'starts with'
+
+
+[kafka.acl.producer.cmd.shortDescription]
+one = 'Add ACL rules for user to produce messages to topics'
+
+[kafka.acl.producer.cmd.longDescription]
+one = 'This command will create ACL rules to allow user to produce messages to topics'
+
+[kafka.acl.producer.cmd.example]
+one = '''
+# Grant access to principal to allow producing messages to all topics
+$ rhoas kafka acl producer --user user_name
+
+# Grant access to principal to allow producing messages to topics starting with "abc"
+$ rhoas kafka acl producer --user user_name --topic-prefix "abc"
+'''
+
+[kafka.acl.producer.log.info.aclsCreated]
+one = 'ACLs created to allow principal to write messages to topics'
+
+[kafka.acl.consumer.cmd.shortDescription]
+one = 'Add ACL rules for user to consume messages from topics'
+
+[kafka.acl.consumer.cmd.longDescription]
+one = 'This command will create ACL rules to allow user to consume messages from topics'
+
+[kafka.acl.consumer.cmd.example]
+one = '''
+# Grant access to principal to allow consuming messages from all topics
+$ rhoas kafka acl consumer --user user_name
+
+# Grant access to principal to consume messages from topics starting with "abc"
+$ rhoas kafka acl consumer --user user_name --topic-prefix "abc"
+'''
+
+[kafka.acl.consumer.log.info.aclsCreated]
+one = 'ACLs created to allow principal to consume messages from topics'

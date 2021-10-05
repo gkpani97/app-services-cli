@@ -1,0 +1,52 @@
+ifdef::env-github,env-browser[:context: cmd]
+[id='ref-rhoas-kafka-acl-consumer_{context}']
+= rhoas kafka acl consumer
+
+[role="_abstract"]
+Add ACL rules for user to consume messages from topics
+
+[discrete]
+== Synopsis
+
+This command will create ACL rules to allow user to consume messages from topics
+
+....
+rhoas kafka acl consumer [flags]
+....
+
+[discrete]
+== Examples
+
+....
+# Grant access to principal to allow consuming messages from all topics
+$ rhoas kafka acl consumer --user user_name
+
+# Grant access to principal to consume messages from topics starting with "abc"
+$ rhoas kafka acl consumer --user user_name --topic-prefix "abc"
+
+....
+
+[discrete]
+== Options
+
+      `--service-account` _string_::   service account ID to be used as principal
+      `--topic-prefix` _string_::      prefix topic name to define ACL rules for
+      `--user` _string_::              username to be used as principal
+
+[discrete]
+== Options inherited from parent commands
+
+  `-h`, `--help`::      Show help for a command
+  `-v`, `--verbose`::   Enable verbose mode
+
+[discrete]
+== See also
+
+
+ifdef::env-github,env-browser[]
+* link:rhoas_kafka_acl.adoc#rhoas-kafka-acl[rhoas kafka acl]	 - Kafka ACL management for users and service accounts
+endif::[]
+ifdef::pantheonenv[]
+* link:{path}#ref-rhoas-kafka-acl_{context}[rhoas kafka acl]	 - Kafka ACL management for users and service accounts
+endif::[]
+
