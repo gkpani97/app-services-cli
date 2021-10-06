@@ -3,7 +3,6 @@ package consumer
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/redhat-developer/app-services-cli/internal/config"
 	"github.com/redhat-developer/app-services-cli/pkg/cmd/factory"
@@ -95,6 +94,8 @@ func runConsumer(opts *options) (err error) {
 		return err
 	}
 
+	kafkaName := kafkaInstance.GetName()
+
 	var topicNameArg string = acl.Wildcard
 	var patternArg kafkainstanceclient.AclPatternType = kafkainstanceclient.ACLPATTERNTYPE_LITERAL
 
@@ -119,60 +120,18 @@ func runConsumer(opts *options) (err error) {
 
 	req = req.AclBinding(aclBindTopicDescribe)
 
-	httpRes, err := req.Execute()
-	if httpRes != nil {
-		defer httpRes.Body.Close()
-	}
-
+	err = acl.ExecuteACLRuleCreate(req, opts.localizer, kafkaName)
 	if err != nil {
-		if httpRes == nil {
-			return err
-		}
-
-		operationTmplPair := localize.NewEntry("Operation", "create")
-
-		switch httpRes.StatusCode {
-		case http.StatusUnauthorized:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.unauthorized", operationTmplPair)
-		case http.StatusForbidden:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.forbidden", operationTmplPair)
-		case http.StatusInternalServerError:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.internalServerError")
-		case http.StatusServiceUnavailable:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.unableToConnectToKafka", localize.NewEntry("Name", kafkaInstance.GetName()))
-		default:
-			return err
-		}
+		return err
 	}
 
 	aclBindTopicRead := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_TOPIC, topicNameArg, patternArg, userArg, kafkainstanceclient.ACLOPERATION_READ, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
 
 	req = req.AclBinding(aclBindTopicRead)
 
-	httpRes, err = req.Execute()
-	if httpRes != nil {
-		defer httpRes.Body.Close()
-	}
-
+	err = acl.ExecuteACLRuleCreate(req, opts.localizer, kafkaName)
 	if err != nil {
-		if httpRes == nil {
-			return err
-		}
-
-		operationTmplPair := localize.NewEntry("Operation", "create")
-
-		switch httpRes.StatusCode {
-		case http.StatusUnauthorized:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.unauthorized", operationTmplPair)
-		case http.StatusForbidden:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.forbidden", operationTmplPair)
-		case http.StatusInternalServerError:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.internalServerError")
-		case http.StatusServiceUnavailable:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.unableToConnectToKafka", localize.NewEntry("Name", kafkaInstance.GetName()))
-		default:
-			return err
-		}
+		return err
 	}
 
 	aclBindGroupRead := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_GROUP, acl.Wildcard, patternArg, userArg, kafkainstanceclient.ACLOPERATION_READ, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
@@ -181,33 +140,12 @@ func runConsumer(opts *options) (err error) {
 
 	req = req.AclBinding(aclBindGroupRead)
 
-	httpRes, err = req.Execute()
-	if httpRes != nil {
-		defer httpRes.Body.Close()
-	}
-
+	err = acl.ExecuteACLRuleCreate(req, opts.localizer, kafkaName)
 	if err != nil {
-		if httpRes == nil {
-			return err
-		}
-
-		operationTmplPair := localize.NewEntry("Operation", "create")
-
-		switch httpRes.StatusCode {
-		case http.StatusUnauthorized:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.unauthorized", operationTmplPair)
-		case http.StatusForbidden:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.forbidden", operationTmplPair)
-		case http.StatusInternalServerError:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.internalServerError")
-		case http.StatusServiceUnavailable:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.unableToConnectToKafka", localize.NewEntry("Name", kafkaInstance.GetName()))
-		default:
-			return err
-		}
+		return err
 	}
 
-	opts.Logger.Info(opts.localizer.MustLocalize("kafka.acl.consumer.log.info.aclsCreated", localize.NewEntry("InstanceName", kafkaInstance.GetName())))
+	opts.Logger.Info(opts.localizer.MustLocalize("kafka.acl.consumer.log.info.aclsCreated", localize.NewEntry("InstanceName", kafkaName)))
 
 	return nil
 }

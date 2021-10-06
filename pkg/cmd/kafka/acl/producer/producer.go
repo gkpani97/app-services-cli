@@ -3,7 +3,6 @@ package producer
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/redhat-developer/app-services-cli/internal/config"
 	"github.com/redhat-developer/app-services-cli/pkg/cmd/factory"
@@ -97,6 +96,8 @@ func runConsumer(opts *options) (err error) {
 		return err
 	}
 
+	kafkaName := kafkaInstance.GetName()
+
 	var topicNameArg string = acl.Wildcard
 	var patternArg kafkainstanceclient.AclPatternType = kafkainstanceclient.ACLPATTERNTYPE_LITERAL
 
@@ -121,83 +122,50 @@ func runConsumer(opts *options) (err error) {
 
 	req = req.AclBinding(aclBindTopicDescribe)
 
-	httpRes, err := req.Execute()
-	if httpRes != nil {
-		defer httpRes.Body.Close()
-	}
-
+	err = acl.ExecuteACLRuleCreate(req, opts.localizer, kafkaName)
 	if err != nil {
-		if httpRes == nil {
-			return err
-		}
-
-		operationTmplPair := localize.NewEntry("Operation", "create")
-
-		switch httpRes.StatusCode {
-		case http.StatusUnauthorized:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.unauthorized", operationTmplPair)
-		case http.StatusForbidden:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.forbidden", operationTmplPair)
-		case http.StatusInternalServerError:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.internalServerError")
-		case http.StatusServiceUnavailable:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.unableToConnectToKafka", localize.NewEntry("Name", kafkaInstance.GetName()))
-		default:
-			return err
-		}
+		return err
 	}
 
 	aclBindTopicWrite := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_TOPIC, topicNameArg, patternArg, userArg, kafkainstanceclient.ACLOPERATION_WRITE, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
 
 	req = req.AclBinding(aclBindTopicWrite)
 
-	httpRes, err = req.Execute()
-	if httpRes != nil {
-		defer httpRes.Body.Close()
-	}
-
+	err = acl.ExecuteACLRuleCreate(req, opts.localizer, kafkaName)
 	if err != nil {
-		if httpRes == nil {
-			return err
-		}
-
-		operationTmplPair := localize.NewEntry("Operation", "create")
-
-		switch httpRes.StatusCode {
-		case http.StatusUnauthorized:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.unauthorized", operationTmplPair)
-		case http.StatusForbidden:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.forbidden", operationTmplPair)
-		case http.StatusInternalServerError:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.internalServerError")
-		case http.StatusServiceUnavailable:
-			return opts.localizer.MustLocalizeError("kafka.acl.common.error.unableToConnectToKafka", localize.NewEntry("Name", kafkaInstance.GetName()))
-		default:
-			return err
-		}
+		return err
 	}
 
 	aclBindTopicCreate := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_TOPIC, topicNameArg, patternArg, userArg, kafkainstanceclient.ACLOPERATION_CREATE, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
 
 	req = req.AclBinding(aclBindTopicCreate)
 
-	httpRes, err = req.Execute()
-	if httpRes != nil {
-		defer httpRes.Body.Close()
+	err = acl.ExecuteACLRuleCreate(req, opts.localizer, kafkaName)
+	if err != nil {
+		return err
 	}
 
 	if opts.transactionID != "" {
-		aclBindTransactionAll := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_TRANSACTIONAL_ID, opts.transactionID, kafkainstanceclient.ACLPATTERNTYPE_LITERAL, userArg, kafkainstanceclient.ACLOPERATION_ALL, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
+		aclBindTransactionIDWrite := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_TRANSACTIONAL_ID, opts.transactionID, kafkainstanceclient.ACLPATTERNTYPE_LITERAL, userArg, kafkainstanceclient.ACLOPERATION_WRITE, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
 
-		req = req.AclBinding(aclBindTransactionAll)
+		req = req.AclBinding(aclBindTransactionIDWrite)
 
-		httpRes, err = req.Execute()
-		if httpRes != nil {
-			defer httpRes.Body.Close()
+		err = acl.ExecuteACLRuleCreate(req, opts.localizer, kafkaName)
+		if err != nil {
+			return err
+		}
+
+		aclBindTransactionIDDescribe := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_TRANSACTIONAL_ID, opts.transactionID, kafkainstanceclient.ACLPATTERNTYPE_LITERAL, userArg, kafkainstanceclient.ACLOPERATION_DESCRIBE, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
+
+		req = req.AclBinding(aclBindTransactionIDDescribe)
+
+		err = acl.ExecuteACLRuleCreate(req, opts.localizer, kafkaName)
+		if err != nil {
+			return err
 		}
 	}
 
-	opts.Logger.Info(opts.localizer.MustLocalize("kafka.acl.producer.log.info.aclsCreated", localize.NewEntry("InstanceName", kafkaInstance.GetName())))
+	opts.Logger.Info(opts.localizer.MustLocalize("kafka.acl.producer.log.info.aclsCreated", localize.NewEntry("InstanceName", kafkaName)))
 
 	return nil
 }
