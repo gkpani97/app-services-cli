@@ -74,17 +74,29 @@ func NewGrantPermissionsACLCommand(f *factory.Factory) *cobra.Command {
 				return opts.localizer.MustLocalizeError("kafka.acl.common.error.bothPricipalsSelected")
 			}
 
+			if opts.admin && opts.user == "" {
+				return opts.localizer.MustLocalizeError("kafka.acl.grantPermissions.error.user.required")
+			}
+
+			if opts.admin && (opts.consumer || opts.producer) {
+				return opts.localizer.MustLocalizeError("kafka.acl.grantPermissions.admin.error.notAllowed")
+			}
+
+			if !opts.consumer && opts.group != "" {
+				return opts.localizer.MustLocalizeError("kafka.acl.grantPermissions.group.error.notAllowed")
+			}
+
 			return runGrantPermissions(opts)
 		},
 	}
 
-	cmd.Flags().StringVar(&opts.user, "user", "", opts.localizer.MustLocalize("kafka.acl.grantPermissions.flag.user.description"))
-	cmd.Flags().StringVar(&opts.svcAccount, "service-account", "", opts.localizer.MustLocalize("kafka.acl.grantPermissions.flag.serviceAccount.description"))
-	cmd.Flags().StringVar(&opts.topic, "topic", "", opts.localizer.MustLocalize("kafka.acl.grantPermissions.flag.topic.description"))
-	cmd.Flags().StringVar(&opts.group, "group", "", opts.localizer.MustLocalize("kafka.acl.grantPermissions.flag.group.description"))
+	cmd.Flags().StringVar(&opts.user, "user", "", opts.localizer.MustLocalize("kafka.acl.common.flag.user.description"))
+	cmd.Flags().StringVar(&opts.svcAccount, "service-account", "", opts.localizer.MustLocalize("kafka.acl.common.flag.serviceAccount.description"))
+	cmd.Flags().StringVar(&opts.topic, "topic", "", opts.localizer.MustLocalize("kafka.acl.common.flag.topic.description"))
+	cmd.Flags().StringVar(&opts.group, "group", "", opts.localizer.MustLocalize("kafka.acl.common.flag.group.description"))
 	cmd.Flags().BoolVar(&opts.consumer, "consumer", false, opts.localizer.MustLocalize("kafka.acl.grantPermissions.flag.consumer.description"))
 	cmd.Flags().BoolVar(&opts.producer, "producer", false, opts.localizer.MustLocalize("kafka.acl.grantPermissions.flag.producer.description"))
-	cmd.Flags().BoolVar(&opts.prefix, "prefix", false, opts.localizer.MustLocalize("kafka.acl.grantPermissions.flag.prefix.description"))
+	cmd.Flags().BoolVar(&opts.prefix, "prefix", false, opts.localizer.MustLocalize("kafka.acl.common.flag.prefix.description"))
 	cmd.Flags().BoolVar(&opts.admin, "admin", false, opts.localizer.MustLocalize("kafka.acl.grantPermissions.flag.admin.description"))
 
 	return cmd
@@ -107,16 +119,23 @@ func runGrantPermissions(opts *options) (err error) {
 
 	var topicNameArg string = acl.Wildcard
 	var groupIdArg string = acl.Wildcard
-	var patternArg kafkainstanceclient.AclPatternType = kafkainstanceclient.ACLPATTERNTYPE_LITERAL
+	var topicPatternArg = kafkainstanceclient.ACLPATTERNTYPE_LITERAL
+	var groupPatternArg = kafkainstanceclient.ACLPATTERNTYPE_LITERAL
 
 	var userArg string
 
 	if opts.topic != "" {
 		topicNameArg = opts.topic
+		if opts.prefix {
+			topicPatternArg = kafkainstanceclient.ACLPATTERNTYPE_PREFIXED
+		}
 	}
 
-	if opts.prefix {
-		patternArg = kafkainstanceclient.ACLPATTERNTYPE_PREFIXED
+	if opts.group != "" {
+		groupIdArg = opts.group
+		if opts.prefix {
+			groupPatternArg = kafkainstanceclient.ACLPATTERNTYPE_PREFIXED
+		}
 	}
 
 	if opts.user != "" {
@@ -130,7 +149,14 @@ func runGrantPermissions(opts *options) (err error) {
 	req := api.AclsApi.CreateAcl(opts.Context)
 
 	if opts.producer || opts.consumer {
-		aclBindTopicDescribe := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_TOPIC, topicNameArg, patternArg, userArg, kafkainstanceclient.ACLOPERATION_DESCRIBE, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
+		aclBindTopicDescribe := *kafkainstanceclient.NewAclBinding(
+			kafkainstanceclient.ACLRESOURCETYPE_TOPIC,
+			topicNameArg,
+			topicPatternArg,
+			userArg,
+			kafkainstanceclient.ACLOPERATION_DESCRIBE,
+			kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW,
+		)
 
 		req = req.AclBinding(aclBindTopicDescribe)
 
@@ -142,7 +168,14 @@ func runGrantPermissions(opts *options) (err error) {
 
 	if opts.consumer {
 
-		aclBindTopicRead := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_TOPIC, topicNameArg, patternArg, userArg, kafkainstanceclient.ACLOPERATION_READ, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
+		aclBindTopicRead := *kafkainstanceclient.NewAclBinding(
+			kafkainstanceclient.ACLRESOURCETYPE_TOPIC,
+			topicNameArg,
+			topicPatternArg,
+			userArg,
+			kafkainstanceclient.ACLOPERATION_READ,
+			kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW,
+		)
 
 		req = req.AclBinding(aclBindTopicRead)
 
@@ -151,7 +184,14 @@ func runGrantPermissions(opts *options) (err error) {
 			return err
 		}
 
-		aclBindGroupRead := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_GROUP, groupIdArg, patternArg, userArg, kafkainstanceclient.ACLOPERATION_READ, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
+		aclBindGroupRead := *kafkainstanceclient.NewAclBinding(
+			kafkainstanceclient.ACLRESOURCETYPE_GROUP,
+			groupIdArg,
+			groupPatternArg,
+			userArg,
+			kafkainstanceclient.ACLOPERATION_READ,
+			kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW,
+		)
 
 		req = api.AclsApi.CreateAcl(opts.Context).AclBinding(aclBindGroupRead)
 
@@ -165,7 +205,14 @@ func runGrantPermissions(opts *options) (err error) {
 
 	if opts.producer {
 
-		aclBindTopicWrite := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_TOPIC, topicNameArg, patternArg, userArg, kafkainstanceclient.ACLOPERATION_WRITE, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
+		aclBindTopicWrite := *kafkainstanceclient.NewAclBinding(
+			kafkainstanceclient.ACLRESOURCETYPE_TOPIC,
+			topicNameArg,
+			topicPatternArg,
+			userArg,
+			kafkainstanceclient.ACLOPERATION_WRITE,
+			kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW,
+		)
 
 		req = req.AclBinding(aclBindTopicWrite)
 
@@ -174,7 +221,14 @@ func runGrantPermissions(opts *options) (err error) {
 			return err
 		}
 
-		aclBindTopicCreate := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_TOPIC, topicNameArg, patternArg, userArg, kafkainstanceclient.ACLOPERATION_CREATE, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
+		aclBindTopicCreate := *kafkainstanceclient.NewAclBinding(
+			kafkainstanceclient.ACLRESOURCETYPE_TOPIC,
+			topicNameArg,
+			topicPatternArg,
+			userArg,
+			kafkainstanceclient.ACLOPERATION_CREATE,
+			kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW,
+		)
 
 		req = req.AclBinding(aclBindTopicCreate)
 
@@ -184,7 +238,14 @@ func runGrantPermissions(opts *options) (err error) {
 		}
 
 		// Add ACLs for transactional IDs
-		aclBindTransactionIDWrite := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_TRANSACTIONAL_ID, acl.Wildcard, kafkainstanceclient.ACLPATTERNTYPE_LITERAL, userArg, kafkainstanceclient.ACLOPERATION_WRITE, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
+		aclBindTransactionIDWrite := *kafkainstanceclient.NewAclBinding(
+			kafkainstanceclient.ACLRESOURCETYPE_TRANSACTIONAL_ID,
+			acl.Wildcard,
+			kafkainstanceclient.ACLPATTERNTYPE_LITERAL,
+			userArg,
+			kafkainstanceclient.ACLOPERATION_WRITE,
+			kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW,
+		)
 
 		req = req.AclBinding(aclBindTransactionIDWrite)
 
@@ -193,7 +254,14 @@ func runGrantPermissions(opts *options) (err error) {
 			return err
 		}
 
-		aclBindTransactionIDDescribe := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_TRANSACTIONAL_ID, acl.Wildcard, kafkainstanceclient.ACLPATTERNTYPE_LITERAL, userArg, kafkainstanceclient.ACLOPERATION_DESCRIBE, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
+		aclBindTransactionIDDescribe := *kafkainstanceclient.NewAclBinding(
+			kafkainstanceclient.ACLRESOURCETYPE_TRANSACTIONAL_ID,
+			acl.Wildcard,
+			kafkainstanceclient.ACLPATTERNTYPE_LITERAL,
+			userArg,
+			kafkainstanceclient.ACLOPERATION_DESCRIBE,
+			kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW,
+		)
 
 		req = req.AclBinding(aclBindTransactionIDDescribe)
 
@@ -206,7 +274,15 @@ func runGrantPermissions(opts *options) (err error) {
 	}
 
 	if opts.admin {
-		aclBindClusterAlter := *kafkainstanceclient.NewAclBinding(kafkainstanceclient.ACLRESOURCETYPE_CLUSTER, acl.KafkaCluster, kafkainstanceclient.ACLPATTERNTYPE_LITERAL, userArg, kafkainstanceclient.ACLOPERATION_ALTER, kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW)
+
+		aclBindClusterAlter := *kafkainstanceclient.NewAclBinding(
+			kafkainstanceclient.ACLRESOURCETYPE_CLUSTER,
+			acl.KafkaCluster,
+			kafkainstanceclient.ACLPATTERNTYPE_LITERAL,
+			userArg,
+			kafkainstanceclient.ACLOPERATION_ALTER,
+			kafkainstanceclient.ACLPERMISSIONTYPE_ALLOW,
+		)
 
 		req = req.AclBinding(aclBindClusterAlter)
 

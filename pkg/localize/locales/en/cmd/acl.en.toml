@@ -51,19 +51,19 @@ $ rhoas kafka acl consumer --user user_name
 $ rhoas kafka acl consumer --user user_name --topic-prefix "abc"
 '''
 
-[kafka.acl.grantPermissions.flag.user.description]
+[kafka.acl.common.flag.user.description]
 one = 'username to be used as principal'
 
-[kafka.acl.grantPermissions.flag.serviceAccount.description]
+[kafka.acl.common.flag.serviceAccount.description]
 one = 'service account ID to be used as principal'
 
-[kafka.acl.grantPermissions.flag.topic.description]
+[kafka.acl.common.flag.topic.description]
 one = 'topic name to define ACL rules for'
 
-[kafka.acl.grantPermissions.flag.group.description]
+[kafka.acl.common.flag.group.description]
 one = 'consumer group ID to define ACL rules for'
 
-[kafka.acl.grantPermissions.flag.prefix.description]
+[kafka.acl.common.flag.prefix.description]
 one = 'determine if resource name should be exact or prefix'
 
 [kafka.acl.grantPermissions.flag.producer.description]
@@ -119,3 +119,12 @@ one = 'ACLs created to allow principal to consume messages from topics'
 
 [kafka.acl.grantPermissions.admin.log.info.aclsCreated]
 one = 'User is now allowed to manage ACLs for given Kafka instance'
+
+[kafka.acl.grantPermissions.error.user.required]
+one = 'User is required while giving admin rights'
+
+[kafka.acl.grantPermissions.admin.error.notAllowed]
+one = 'admin ACLs can not be added simultaneously with producer/consumer ACLs'
+
+[kafka.acl.grantPermissions.group.error.notAllowed]
+one = 'group flag is allowed only when consumer ACLs are to be added'
