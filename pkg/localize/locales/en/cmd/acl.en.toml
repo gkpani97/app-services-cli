@@ -36,17 +36,44 @@ one = 'flags "user" and "service-account" can not be provided simultaneously'
 one = 'principal is missing, provide "user" or "service-account" flag'
 
 
-[kafka.acl.common.flag.user.description]
+[kafka.acl.grantPermissions.cmd.shortDescription]
+one = 'Add ACL rules for user to consume messages from topics'
+
+[kafka.acl.grantPermissions.cmd.longDescription]
+one = 'This command will create ACL rules to allow user to consume messages from topics'
+
+[kafka.acl.grantPermissions.cmd.example]
+one = '''
+# Grant access to principal to allow consuming messages from all topics
+$ rhoas kafka acl consumer --user user_name
+
+# Grant access to principal to consume messages from topics starting with "abc"
+$ rhoas kafka acl consumer --user user_name --topic-prefix "abc"
+'''
+
+[kafka.acl.grantPermissions.flag.user.description]
 one = 'username to be used as principal'
 
-[kafka.acl.common.flag.serviceAccount.description]
+[kafka.acl.grantPermissions.flag.serviceAccount.description]
 one = 'service account ID to be used as principal'
 
-[kafka.acl.common.flag.topicPrefix.description]
-one = 'prefix topic name to define ACL rules for'
+[kafka.acl.grantPermissions.flag.topic.description]
+one = 'topic name to define ACL rules for'
 
-[kafka.acl.common.flag.transactionalID.description]
-one = 'transactional ID for which ACL rules are to be defined'
+[kafka.acl.grantPermissions.flag.group.description]
+one = 'consumer group ID to define ACL rules for'
+
+[kafka.acl.grantPermissions.flag.prefix.description]
+one = 'determine if resource name should be exact or prefix'
+
+[kafka.acl.grantPermissions.flag.producer.description]
+one = 'Add ACL rules for principal to produce messages to topics'
+
+[kafka.acl.grantPermissions.flag.consumer.description]
+one = 'Add ACL rules for pricipal to consume messages from topics'
+
+[kafka.acl.grantPermissions.flag.admin.description]
+one = 'Allow user to manage ACLs for the Kafka instance'
 
 
 [kafka.acl.list.cmd.shortDescription]
@@ -84,39 +111,11 @@ one = 'is'
 [kafka.acl.list.startsWith]
 one = 'starts with'
 
-
-[kafka.acl.producer.cmd.shortDescription]
-one = 'Add ACL rules for user to produce messages to topics'
-
-[kafka.acl.producer.cmd.longDescription]
-one = 'This command will create ACL rules to allow user to produce messages to topics'
-
-[kafka.acl.producer.cmd.example]
-one = '''
-# Grant access to principal to allow producing messages to all topics
-$ rhoas kafka acl producer --user user_name
-
-# Grant access to principal to allow producing messages to topics starting with "abc"
-$ rhoas kafka acl producer --user user_name --topic-prefix "abc"
-'''
-
-[kafka.acl.producer.log.info.aclsCreated]
+[kafka.acl.grantPermissions.producer.log.info.aclsCreated]
 one = 'ACLs created to allow principal to write messages to topics'
 
-[kafka.acl.consumer.cmd.shortDescription]
-one = 'Add ACL rules for user to consume messages from topics'
-
-[kafka.acl.consumer.cmd.longDescription]
-one = 'This command will create ACL rules to allow user to consume messages from topics'
-
-[kafka.acl.consumer.cmd.example]
-one = '''
-# Grant access to principal to allow consuming messages from all topics
-$ rhoas kafka acl consumer --user user_name
-
-# Grant access to principal to consume messages from topics starting with "abc"
-$ rhoas kafka acl consumer --user user_name --topic-prefix "abc"
-'''
-
-[kafka.acl.consumer.log.info.aclsCreated]
+[kafka.acl.grantPermissions.consumer.log.info.aclsCreated]
 one = 'ACLs created to allow principal to consume messages from topics'
+
+[kafka.acl.grantPermissions.admin.log.info.aclsCreated]
+one = 'User is now allowed to manage ACLs for given Kafka instance'
