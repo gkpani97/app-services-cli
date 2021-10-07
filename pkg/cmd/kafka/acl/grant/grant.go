@@ -31,8 +31,8 @@ type options struct {
 	group       string
 	producer    bool
 	consumer    bool
-	topicPrefix bool
-	groupPrefix bool
+	topicPrefix string
+	groupPrefix string
 	admin       bool
 }
 
@@ -83,12 +83,28 @@ func NewGrantPermissionsACLCommand(f *factory.Factory) *cobra.Command {
 				return opts.localizer.MustLocalizeError("kafka.acl.grantPermissions.admin.error.notAllowed")
 			}
 
-			if opts.admin && (opts.topicPrefix || opts.groupPrefix || opts.topic != "" || opts.group != "") {
+			if opts.admin && (opts.topicPrefix != "" || opts.groupPrefix != "" || opts.topic != "" || opts.group != "") {
 				return opts.localizer.MustLocalizeError("kafka.acl.grantPermissions.admin.flags.error.notAllowed")
 			}
 
-			if !opts.consumer && opts.group != "" {
+			if !opts.consumer && (opts.group != "" || opts.groupPrefix != "") {
 				return opts.localizer.MustLocalizeError("kafka.acl.grantPermissions.group.error.notAllowed")
+			}
+
+			if (opts.topic == "" && opts.topicPrefix == "") && (opts.consumer || opts.producer) {
+				return opts.localizer.MustLocalizeError("kafka.acl.grantPermissions.topic.error.required")
+			}
+
+			if opts.consumer && opts.group == "" && opts.groupPrefix == "" {
+				return opts.localizer.MustLocalizeError("kafka.acl.grantPermissions.group.error.required")
+			}
+
+			if opts.topicPrefix != "" && opts.topic != "" {
+				return opts.localizer.MustLocalizeError("kafka.acl.grantPermissions.prefix.error.notAllowed")
+			}
+
+			if opts.groupPrefix != "" && opts.group != "" {
+				return opts.localizer.MustLocalizeError("kafka.acl.grantPermissions.prefix.error.notAllowed")
 			}
 
 			return runGrantPermissions(opts)
@@ -101,8 +117,8 @@ func NewGrantPermissionsACLCommand(f *factory.Factory) *cobra.Command {
 	cmd.Flags().StringVar(&opts.group, "group", "", opts.localizer.MustLocalize("kafka.acl.common.flag.group.description"))
 	cmd.Flags().BoolVar(&opts.consumer, "consumer", false, opts.localizer.MustLocalize("kafka.acl.grantPermissions.flag.consumer.description"))
 	cmd.Flags().BoolVar(&opts.producer, "producer", false, opts.localizer.MustLocalize("kafka.acl.grantPermissions.flag.producer.description"))
-	cmd.Flags().BoolVar(&opts.topicPrefix, "topic-prefix", false, opts.localizer.MustLocalize("kafka.acl.common.flag.prefix.description"))
-	cmd.Flags().BoolVar(&opts.groupPrefix, "group-prefix", false, opts.localizer.MustLocalize("kafka.acl.common.flag.prefix.description"))
+	cmd.Flags().StringVar(&opts.topicPrefix, "topic-prefix", "", opts.localizer.MustLocalize("kafka.acl.common.flag.topicPrefix.description"))
+	cmd.Flags().StringVar(&opts.groupPrefix, "group-prefix", "", opts.localizer.MustLocalize("kafka.acl.common.flag.groupPrefix.description"))
 	cmd.Flags().BoolVar(&opts.admin, "admin", false, opts.localizer.MustLocalize("kafka.acl.grantPermissions.flag.admin.description"))
 
 	return cmd
@@ -123,8 +139,8 @@ func runGrantPermissions(opts *options) (err error) {
 
 	kafkaName := kafkaInstance.GetName()
 
-	var topicNameArg string = acl.Wildcard
-	var groupIdArg string = acl.Wildcard
+	var topicNameArg string
+	var groupIdArg string
 	var topicPatternArg = kafkainstanceclient.ACLPATTERNTYPE_LITERAL
 	var groupPatternArg = kafkainstanceclient.ACLPATTERNTYPE_LITERAL
 
@@ -132,16 +148,20 @@ func runGrantPermissions(opts *options) (err error) {
 
 	if opts.topic != "" {
 		topicNameArg = opts.topic
-		if opts.topicPrefix {
-			topicPatternArg = kafkainstanceclient.ACLPATTERNTYPE_PREFIXED
-		}
+	}
+
+	if opts.topicPrefix != "" {
+		topicNameArg = opts.topicPrefix
+		topicPatternArg = kafkainstanceclient.ACLPATTERNTYPE_PREFIXED
 	}
 
 	if opts.group != "" {
 		groupIdArg = opts.group
-		if opts.groupPrefix {
-			groupPatternArg = kafkainstanceclient.ACLPATTERNTYPE_PREFIXED
-		}
+	}
+
+	if opts.groupPrefix != "" {
+		groupIdArg = opts.group
+		groupPatternArg = kafkainstanceclient.ACLPATTERNTYPE_PREFIXED
 	}
 
 	if opts.user != "" {

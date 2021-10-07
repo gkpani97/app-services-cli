@@ -45,7 +45,7 @@ one = 'This command creates ACL rules that grant the specified user access to pr
 [kafka.acl.grantPermissions.cmd.example]
 one = '''
 # Grant access to principal for consuming messages from all topics
-$ rhoas kafka acl grant-permissions --consumer --user user_name
+$ rhoas kafka acl grant-permissions --consumer --user user_name --topic *
 
 # Grant access to principal for consuming messages from topics starting with "abc"
 $ rhoas kafka acl grant-permissions --consumer --user user_name --topic-prefix "abc"
@@ -63,8 +63,11 @@ one = 'Topic name to define ACL rules for'
 [kafka.acl.common.flag.group.description]
 one = 'Consumer group ID to define ACL rules for'
 
-[kafka.acl.common.flag.prefix.description]
-one = 'Determines if resource name should be exact or prefix'
+[kafka.acl.common.flag.topicPrefix.description]
+one = 'Prefix name for topics to be selected'
+
+[kafka.acl.common.flag.groupPrefix.description]
+one = 'Prefix name for groups to be selected'
 
 [kafka.acl.grantPermissions.flag.producer.description]
 one = 'Add ACL rules that grant the specified principal access to produce messages to topics'
@@ -131,3 +134,12 @@ one = 'invalid flags provided for admin operation. Only --user flag is required 
 
 [kafka.acl.grantPermissions.group.error.notAllowed]
 one = 'group flag is allowed only when consumer ACLs are to be added'
+
+[kafka.acl.grantPermissions.group.error.required]
+one = 'group flag is required for --consumer operation'
+
+[kafka.acl.grantPermissions.topic.error.required]
+one = 'topic flag is required for --consumer and --producer operations'
+
+[kafka.acl.grantPermissions.prefix.error.notAllowed]
+one = 'can not use prefix and resource name flag together'
