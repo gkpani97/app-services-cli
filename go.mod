@@ -5,14 +5,14 @@ go 1.16
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.2
 	github.com/BurntSushi/toml v0.4.1
-	github.com/MakeNowJust/heredoc v1.0.0
-	github.com/Nerzal/gocloak/v7 v7.11.0
+	github.com/MakeNowJust/heredoc/v2 v2.0.1
+	github.com/Nerzal/gocloak/v9 v9.0.3
 	github.com/aerogear/charmil v0.8.3
 	github.com/briandowns/spinner v1.16.0
 	github.com/coreos/go-oidc/v3 v3.1.0
 	github.com/fatih/color v1.13.0
 	github.com/golang-jwt/jwt/v4 v4.1.0
-	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/go-github/v39 v39.1.0
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23 // indirect
 	github.com/landoop/tableprinter v0.0.0-20201125135848-89e81fc956e7
@@ -36,6 +36,6 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.22.2
 	k8s.io/apimachinery v0.22.2
-	k8s.io/client-go v0.22.2
+	k8s.io/client-go/v12 v12.0.0
 	sigs.k8s.io/controller-runtime v0.10.0 // indirect
 )
