@@ -126,5 +126,8 @@ one = 'User is required while giving admin rights'
 [kafka.acl.grantPermissions.admin.error.notAllowed]
 one = 'admin ACLs can not be added simultaneously with producer/consumer ACLs'
 
+[kafka.acl.grantPermissions.admin.flags.error.notAllowed]
+one = 'invalid flags provided for admin operation. Only --user flag is required for admin'
+
 [kafka.acl.grantPermissions.group.error.notAllowed]
 one = 'group flag is allowed only when consumer ACLs are to be added'

@@ -24,15 +24,16 @@ type options struct {
 	localizer  localize.Localizer
 	Context    context.Context
 
-	kafkaID    string
-	topic      string
-	user       string
-	svcAccount string
-	group      string
-	producer   bool
-	consumer   bool
-	prefix     bool
-	admin      bool
+	kafkaID     string
+	topic       string
+	user        string
+	svcAccount  string
+	group       string
+	producer    bool
+	consumer    bool
+	topicPrefix bool
+	groupPrefix bool
+	admin       bool
 }
 
 // NewGrantPermissionsACLCommand creates a series of ACL rules
@@ -82,6 +83,10 @@ func NewGrantPermissionsACLCommand(f *factory.Factory) *cobra.Command {
 				return opts.localizer.MustLocalizeError("kafka.acl.grantPermissions.admin.error.notAllowed")
 			}
 
+			if opts.admin && (opts.topicPrefix || opts.groupPrefix || opts.topic != "" || opts.group != "") {
+				return opts.localizer.MustLocalizeError("kafka.acl.grantPermissions.admin.flags.error.notAllowed")
+			}
+
 			if !opts.consumer && opts.group != "" {
 				return opts.localizer.MustLocalizeError("kafka.acl.grantPermissions.group.error.notAllowed")
 			}
@@ -96,7 +101,8 @@ func NewGrantPermissionsACLCommand(f *factory.Factory) *cobra.Command {
 	cmd.Flags().StringVar(&opts.group, "group", "", opts.localizer.MustLocalize("kafka.acl.common.flag.group.description"))
 	cmd.Flags().BoolVar(&opts.consumer, "consumer", false, opts.localizer.MustLocalize("kafka.acl.grantPermissions.flag.consumer.description"))
 	cmd.Flags().BoolVar(&opts.producer, "producer", false, opts.localizer.MustLocalize("kafka.acl.grantPermissions.flag.producer.description"))
-	cmd.Flags().BoolVar(&opts.prefix, "prefix", false, opts.localizer.MustLocalize("kafka.acl.common.flag.prefix.description"))
+	cmd.Flags().BoolVar(&opts.topicPrefix, "topic-prefix", false, opts.localizer.MustLocalize("kafka.acl.common.flag.prefix.description"))
+	cmd.Flags().BoolVar(&opts.groupPrefix, "group-prefix", false, opts.localizer.MustLocalize("kafka.acl.common.flag.prefix.description"))
 	cmd.Flags().BoolVar(&opts.admin, "admin", false, opts.localizer.MustLocalize("kafka.acl.grantPermissions.flag.admin.description"))
 
 	return cmd
@@ -126,14 +132,14 @@ func runGrantPermissions(opts *options) (err error) {
 
 	if opts.topic != "" {
 		topicNameArg = opts.topic
-		if opts.prefix {
+		if opts.topicPrefix {
 			topicPatternArg = kafkainstanceclient.ACLPATTERNTYPE_PREFIXED
 		}
 	}
 
 	if opts.group != "" {
 		groupIdArg = opts.group
-		if opts.prefix {
+		if opts.groupPrefix {
 			groupPatternArg = kafkainstanceclient.ACLPATTERNTYPE_PREFIXED
 		}
 	}
