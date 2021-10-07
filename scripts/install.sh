@@ -44,10 +44,14 @@
     mkdir -p "$BINARY_DEST"
   fi
 
-  DOWNLOAD_TAG=$(curl -s "${API_RELEASE_URL}" |
+  DOWN_CURL=$(curl -s "${API_RELEASE_URL}")
+  echo $DOWN_CURL
+  
+  DOWNLOAD_TAG=$($DOWN_CURL |
     grep "tag_name.*" |
     cut -d '"' -f 4)
-
+  echo $DOWNLOAD_TAG
+  
   if [ -z "$DOWNLOAD_TAG" ]; then
     API_RELEASE_URL="$API_RELEASES_BASE_URL/tags/v$RELEASE_TAG"
 
