@@ -2,8 +2,9 @@ package list
 
 import (
 	"context"
-	kafkainstanceclient "github.com/redhat-developer/app-services-sdk-go/kafkainstance/apiv1internal/client"
 	"net/http"
+
+	kafkainstanceclient "github.com/redhat-developer/app-services-sdk-go/kafkainstance/apiv1internal/client"
 
 	"github.com/redhat-developer/app-services-cli/pkg/cmdutil"
 	topicutil "github.com/redhat-developer/app-services-cli/pkg/kafka/topic"
@@ -12,7 +13,9 @@ import (
 	"github.com/redhat-developer/app-services-cli/pkg/cmd/flag"
 	"github.com/redhat-developer/app-services-cli/pkg/connection"
 
-	flagutil "github.com/redhat-developer/app-services-cli/pkg/cmdutil/flags"
+	flagutil "github.com/redhat-developer/app-services-cli/pkg/cmdutil/flagutil"
+
+	"github.com/spf13/cobra"
 
 	"github.com/redhat-developer/app-services-cli/internal/build"
 	"github.com/redhat-developer/app-services-cli/internal/config"
@@ -20,7 +23,6 @@ import (
 	"github.com/redhat-developer/app-services-cli/pkg/dump"
 	"github.com/redhat-developer/app-services-cli/pkg/iostreams"
 	"github.com/redhat-developer/app-services-cli/pkg/logging"
-	"github.com/spf13/cobra"
 )
 
 type options struct {
@@ -91,11 +93,12 @@ func NewListTopicCommand(f *factory.Factory) *cobra.Command {
 				return err
 			}
 
-			if !cfg.HasKafka() {
+			instanceID, ok := cfg.GetKafkaIdOk()
+			if !ok {
 				return opts.localizer.MustLocalizeError("kafka.topic.common.error.noKafkaSelected")
 			}
 
-			opts.kafkaID = cfg.Services.Kafka.ClusterID
+			opts.kafkaID = instanceID
 
 			return runCmd(opts)
 		},

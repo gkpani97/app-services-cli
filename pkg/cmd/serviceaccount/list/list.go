@@ -2,10 +2,11 @@ package list
 
 import (
 	"context"
+
 	"github.com/redhat-developer/app-services-cli/internal/config"
 	"github.com/redhat-developer/app-services-cli/pkg/cmd/factory"
 	"github.com/redhat-developer/app-services-cli/pkg/cmd/flag"
-	flagutil "github.com/redhat-developer/app-services-cli/pkg/cmdutil/flags"
+	flagutil "github.com/redhat-developer/app-services-cli/pkg/cmdutil/flagutil"
 	"github.com/redhat-developer/app-services-cli/pkg/connection"
 	"github.com/redhat-developer/app-services-cli/pkg/dump"
 	"github.com/redhat-developer/app-services-cli/pkg/iostreams"
@@ -30,8 +31,8 @@ type options struct {
 // populate the list of service accounts into a table row
 type svcAcctRow struct {
 	ID        string `json:"id" header:"ID"`
-	Name      string `json:"name" header:"Name"`
 	ClientID  string `json:"clientID" header:"Client ID"`
+	Name      string `json:"name" header:"Short Description"`
 	Owner     string `json:"owner" header:"Owner"`
 	CreatedAt string `json:"createdAt" header:"Created At"`
 }

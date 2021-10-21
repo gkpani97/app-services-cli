@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	flagutil "github.com/redhat-developer/app-services-cli/pkg/cmd/kafka/flagutil"
 	"github.com/redhat-developer/app-services-cli/pkg/connection"
 	kafkacmdutil "github.com/redhat-developer/app-services-cli/pkg/kafka/cmdutil"
 	"github.com/redhat-developer/app-services-cli/pkg/localize"
@@ -22,9 +23,9 @@ import (
 )
 
 type options struct {
-	id    string
-	name  string
-	force bool
+	id          string
+	name        string
+	skipConfirm bool
 
 	IO         *iostreams.IOStreams
 	Config     config.IConfig
@@ -52,7 +53,7 @@ func NewDeleteCommand(f *factory.Factory) *cobra.Command {
 		Example: opts.localizer.MustLocalize("kafka.delete.cmd.example"),
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if !opts.IO.CanPrompt() && !opts.force {
+			if !opts.IO.CanPrompt() && !opts.skipConfirm {
 				return flag.RequiredWhenNonInteractiveError("yes")
 			}
 
@@ -69,19 +70,20 @@ func NewDeleteCommand(f *factory.Factory) *cobra.Command {
 				return err
 			}
 
-			var kafkaConfig *config.KafkaConfig
-			if cfg.Services.Kafka == kafkaConfig || cfg.Services.Kafka.ClusterID == "" {
+			instanceID, ok := cfg.GetKafkaIdOk()
+			if !ok {
 				return opts.localizer.MustLocalizeError("kafka.common.error.noKafkaSelected")
 			}
-
-			opts.id = cfg.Services.Kafka.ClusterID
+			opts.id = instanceID
 
 			return runDelete(opts)
 		},
 	}
 
+	flagSet := flagutil.NewFlagSet(cmd, opts.localizer)
+	flagSet.AddYes(&opts.skipConfirm)
+
 	cmd.Flags().StringVar(&opts.id, "id", "", opts.localizer.MustLocalize("kafka.delete.flag.id"))
-	cmd.Flags().BoolVarP(&opts.force, "yes", "y", false, opts.localizer.MustLocalize("kafka.delete.flag.yes"))
 	cmd.Flags().StringVar(&opts.name, "name", "", opts.localizer.MustLocalize("kafka.delete.flag.name"))
 
 	if err := kafkacmdutil.RegisterNameFlagCompletionFunc(cmd, f); err != nil {
@@ -119,7 +121,7 @@ func runDelete(opts *options) error {
 
 	kafkaName := response.GetName()
 
-	if !opts.force {
+	if !opts.skipConfirm {
 		promptConfirmName := &survey.Input{
 			Message: opts.localizer.MustLocalize("kafka.delete.input.confirmName.message", localize.NewEntry("Name", kafkaName)),
 		}

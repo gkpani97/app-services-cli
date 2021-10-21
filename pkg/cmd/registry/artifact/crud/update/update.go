@@ -8,7 +8,7 @@ import (
 	"github.com/redhat-developer/app-services-cli/pkg/localize"
 
 	"github.com/redhat-developer/app-services-cli/pkg/cmd/registry/artifact/util"
-	flagutil "github.com/redhat-developer/app-services-cli/pkg/cmdutil/flags"
+	flagutil "github.com/redhat-developer/app-services-cli/pkg/cmdutil/flagutil"
 
 	"github.com/redhat-developer/app-services-cli/pkg/iostreams"
 
@@ -75,11 +75,12 @@ func NewUpdateCommand(f *factory.Factory) *cobra.Command {
 				return err
 			}
 
-			if !cfg.HasServiceRegistry() {
+			instanceID, ok := cfg.GetServiceRegistryIdOk()
+			if !ok {
 				return opts.localizer.MustLocalizeError("artifact.cmd.common.error.noServiceRegistrySelected")
 			}
 
-			opts.registryID = cfg.Services.ServiceRegistry.InstanceID
+			opts.registryID = instanceID
 			return runUpdate(opts)
 		},
 	}

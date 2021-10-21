@@ -1,4 +1,69 @@
 
+<a name="v0.34.2"></a>
+## [v0.34.2](https://github.com/redhat-developer/app-services-cli/compare/v0.34.1...v0.34.2) (2021-10-19)
+
+### Bug Fixes
+
+* **cluster connect:** display service account credentials ([#1237](https://github.com/redhat-developer/app-services-cli/issues/1237))
+
+### Features
+
+* **kafka acl:** add `acl delete` command ([#1218](https://github.com/redhat-developer/app-services-cli/issues/1218))
+* **kafka acl grant-access:** add --all-accounts flag ([#1222](https://github.com/redhat-developer/app-services-cli/issues/1222))
+
+
+<a name="v0.34.1"></a>
+## [v0.34.1](https://github.com/redhat-developer/app-services-cli/compare/v0.34.0...v0.34.1) (2021-10-15)
+
+
+<a name="v0.34.0"></a>
+## [v0.34.0](https://github.com/redhat-developer/app-services-cli/compare/v0.33.1...v0.34.0) (2021-10-14)
+
+### Bug Fixes
+
+* cleanup .cases
+
+### Features
+
+* service registry integration with cluster commands ([#1187](https://github.com/redhat-developer/app-services-cli/issues/1187))
+
+
+<a name="v0.33.1"></a>
+## [v0.33.1](https://github.com/redhat-developer/app-services-cli/compare/v0.33.0...v0.33.1) (2021-10-13)
+
+### Bug Fixes
+
+* address review comment
+
+### Features
+
+* **kafka acl:** add instance-id flag and use all alias ([#1217](https://github.com/redhat-developer/app-services-cli/issues/1217))
+* **kafka acl grant-permissions:** add preview and confirmation
+
+
+<a name="v0.33.0"></a>
+## [v0.33.0](https://github.com/redhat-developer/app-services-cli/compare/v0.32.0...v0.33.0) (2021-10-12)
+
+### Bug Fixes
+
+* use pre-defined service status constant values
+* replace service account "name" with "short description" ([#1193](https://github.com/redhat-developer/app-services-cli/issues/1193))
+* check HTTP code as instance quota check
+* detect and  handle API error code
+* changed the source path for rhoas binary
+* use pre-defined service status constant values (generate docs)
+* use realistic values and remove <> characters
+* add token endpoint URL to credentials file ([#1177](https://github.com/redhat-developer/app-services-cli/issues/1177))
+* **deps:** update golang.org/x/oauth2 commit hash to 6b3c2da
+* **kafka acl:** address review comments for list command
+* **service-registry list:** adding input validation ([#1163](https://github.com/redhat-developer/app-services-cli/issues/1163))
+
+### Features
+
+* **kafka acl:** add acl grant-permissions command ([#1179](https://github.com/redhat-developer/app-services-cli/issues/1179))
+* **kafka acl:** add base and list command ([#1173](https://github.com/redhat-developer/app-services-cli/issues/1173))
+
+
 <a name="v0.32.0"></a>
 ## [v0.32.0](https://github.com/redhat-developer/app-services-cli/compare/v0.31.1...v0.32.0) (2021-09-28)
 

@@ -41,12 +41,20 @@ type ServiceRegistryConfig struct {
 	Name       string `json:"name"`
 }
 
-func (c *Config) HasKafka() bool {
-	return c.Services.Kafka != nil &&
-		c.Services.Kafka.ClusterID != ""
+// GetKafkaIdOk returns the current Kafka instance ID and whether it exists
+func (c *Config) GetKafkaIdOk() (string, bool) {
+	if c.Services.Kafka != nil && c.Services.Kafka.ClusterID != "" {
+		return c.Services.Kafka.ClusterID, true
+	}
+
+	return "", false
 }
 
-func (c *Config) HasServiceRegistry() bool {
-	return c.Services.ServiceRegistry != nil &&
-		c.Services.ServiceRegistry.InstanceID != ""
+// GetServiceRegistryIdOk returns the service registry instance ID and whether it exists or not
+func (c *Config) GetServiceRegistryIdOk() (string, bool) {
+	if c.Services.ServiceRegistry != nil && c.Services.ServiceRegistry.InstanceID != "" {
+		return c.Services.ServiceRegistry.InstanceID, true
+	}
+
+	return "", false
 }

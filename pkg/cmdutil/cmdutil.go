@@ -1,11 +1,13 @@
 package cmdutil
 
 import (
+	"fmt"
 	"strconv"
+
+	"github.com/spf13/cobra"
 
 	"github.com/redhat-developer/app-services-cli/pkg/cmd/factory"
 	"github.com/redhat-developer/app-services-cli/pkg/connection"
-	"github.com/spf13/cobra"
 )
 
 // FilterValidTopicNameArgs filters topics from the API and returns the names
@@ -19,7 +21,8 @@ func FilterValidTopicNameArgs(f *factory.Factory, toComplete string) (validNames
 		return validNames, directive
 	}
 
-	if !cfg.HasKafka() {
+	instanceID, ok := cfg.GetKafkaIdOk()
+	if !ok {
 		return validNames, directive
 	}
 
@@ -28,7 +31,7 @@ func FilterValidTopicNameArgs(f *factory.Factory, toComplete string) (validNames
 		return validNames, directive
 	}
 
-	api, _, err := conn.API().KafkaAdmin(cfg.Services.Kafka.ClusterID)
+	api, _, err := conn.API().KafkaAdmin(instanceID)
 	if err != nil {
 		return validNames, directive
 	}
@@ -60,7 +63,8 @@ func FilterValidConsumerGroupIDs(f *factory.Factory, toComplete string) (validID
 		return validIDs, directive
 	}
 
-	if !cfg.HasKafka() {
+	instanceID, ok := cfg.GetKafkaIdOk()
+	if !ok {
 		return validIDs, directive
 	}
 
@@ -69,7 +73,7 @@ func FilterValidConsumerGroupIDs(f *factory.Factory, toComplete string) (validID
 		return validIDs, directive
 	}
 
-	api, _, err := conn.API().KafkaAdmin(cfg.Services.Kafka.ClusterID)
+	api, _, err := conn.API().KafkaAdmin(instanceID)
 	if err != nil {
 		return validIDs, directive
 	}
@@ -109,4 +113,18 @@ func ConvertSizeValueToInt32(s string) int32 {
 	}
 
 	return int32(val)
+}
+
+// StringSliceToListStringWithQuotes converts a string slice to a
+// comma-separated list with each value in quotes.
+// Example: "a", "b", "c"
+func StringSliceToListStringWithQuotes(validOptions []string) string {
+	var listF string
+	for i, val := range validOptions {
+		listF += fmt.Sprintf("\"%v\"", val)
+		if i < len(validOptions)-1 {
+			listF += ", "
+		}
+	}
+	return listF
 }

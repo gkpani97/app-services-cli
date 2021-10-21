@@ -3,12 +3,13 @@ package describe
 import (
 	"context"
 	"fmt"
-	flagutil "github.com/redhat-developer/app-services-cli/pkg/cmdutil/flags"
+	"net/http"
+
+	flagutil "github.com/redhat-developer/app-services-cli/pkg/cmdutil/flagutil"
 	"github.com/redhat-developer/app-services-cli/pkg/connection"
 	"github.com/redhat-developer/app-services-cli/pkg/iostreams"
 	kafkacmdutil "github.com/redhat-developer/app-services-cli/pkg/kafka/cmdutil"
 	"github.com/redhat-developer/app-services-cli/pkg/localize"
-	"net/http"
 
 	"github.com/redhat-developer/app-services-cli/pkg/cmd/flag"
 
@@ -72,10 +73,11 @@ func NewDescribeCommand(f *factory.Factory) *cobra.Command {
 				return err
 			}
 
-			var kafkaConfig *config.KafkaConfig
-			if cfg.Services.Kafka == kafkaConfig || cfg.Services.Kafka.ClusterID == "" {
+			instanceID, ok := cfg.GetKafkaIdOk()
+			if !ok {
 				return opts.localizer.MustLocalizeError("kafka.common.error.noKafkaSelected")
 			}
+			opts.id = instanceID
 
 			opts.id = cfg.Services.Kafka.ClusterID
 

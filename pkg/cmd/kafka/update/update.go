@@ -16,6 +16,7 @@ import (
 	"github.com/redhat-developer/app-services-cli/pkg/auth/token"
 	"github.com/redhat-developer/app-services-cli/pkg/cmd/factory"
 	"github.com/redhat-developer/app-services-cli/pkg/cmd/flag"
+	"github.com/redhat-developer/app-services-cli/pkg/cmdutil/flagutil"
 	"github.com/redhat-developer/app-services-cli/pkg/color"
 	"github.com/redhat-developer/app-services-cli/pkg/connection"
 	"github.com/redhat-developer/app-services-cli/pkg/icon"
@@ -99,12 +100,11 @@ func NewUpdateCommand(f *factory.Factory) *cobra.Command {
 				return run(&opts)
 			}
 
-			var kafkaConfig *config.KafkaConfig
-			if cfg.Services.Kafka == kafkaConfig || cfg.Services.Kafka.ClusterID == "" {
+			instanceID, ok := cfg.GetKafkaIdOk()
+			if !ok {
 				return opts.localizer.MustLocalizeError("kafka.common.error.noKafkaSelected")
 			}
-
-			opts.id = cfg.Services.Kafka.ClusterID
+			opts.id = instanceID
 
 			return run(&opts)
 		},
@@ -116,7 +116,7 @@ func NewUpdateCommand(f *factory.Factory) *cobra.Command {
 	cmd.Flags().StringVar(&opts.name, "name", "", opts.localizer.MustLocalize("kafka.update.flag.name"))
 
 	_ = kafkacmdutil.RegisterNameFlagCompletionFunc(cmd, f)
-	_ = kafkacmdutil.RegisterOwnerFlagCompletionFunc(cmd, f)
+	_ = flagutil.RegisterUserCompletionFunc(cmd, "owner", f.Connection)
 
 	return cmd
 }

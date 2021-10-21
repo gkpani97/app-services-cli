@@ -3,21 +3,24 @@ package metadata
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/redhat-developer/app-services-cli/pkg/icon"
 
-	flagutil "github.com/redhat-developer/app-services-cli/pkg/cmdutil/flags"
+	"github.com/spf13/cobra"
+
+	"github.com/redhat-developer/app-services-cli/pkg/cmdutil/flagutil"
 	"github.com/redhat-developer/app-services-cli/pkg/connection"
 	"github.com/redhat-developer/app-services-cli/pkg/editor"
 	"github.com/redhat-developer/app-services-cli/pkg/iostreams"
 	"github.com/redhat-developer/app-services-cli/pkg/localize"
 	"github.com/redhat-developer/app-services-cli/pkg/serviceregistry/registryinstanceerror"
-	"github.com/spf13/cobra"
+
+	registryinstanceclient "github.com/redhat-developer/app-services-sdk-go/registryinstance/apiv1internal/client"
 
 	"github.com/redhat-developer/app-services-cli/internal/config"
 	"github.com/redhat-developer/app-services-cli/pkg/cmd/factory"
 	"github.com/redhat-developer/app-services-cli/pkg/cmd/registry/artifact/util"
 	"github.com/redhat-developer/app-services-cli/pkg/logging"
-	registryinstanceclient "github.com/redhat-developer/app-services-sdk-go/registryinstance/apiv1internal/client"
 )
 
 type SetOptions struct {
@@ -73,11 +76,12 @@ func NewSetMetadataCommand(f *factory.Factory) *cobra.Command {
 				return err
 			}
 
-			if !cfg.HasServiceRegistry() {
+			instanceID, ok := cfg.GetServiceRegistryIdOk()
+			if !ok {
 				return opts.localizer.MustLocalizeError("registry.no.service.selected.use.instance.id.flag")
 			}
 
-			opts.registryID = cfg.Services.ServiceRegistry.InstanceID
+			opts.registryID = instanceID
 			return runSet(opts)
 		},
 	}
